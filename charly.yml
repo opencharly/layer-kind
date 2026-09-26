@@ -272,7 +272,32 @@ kind-skill:
             kindnet is kind's CNI; there is **no Traefik and no ServiceLB**, so the
             `kube: addons` check verb (which waits on the k3s addon stack) does NOT
             apply to a kind cluster — use `nodes`/`wait-nodes`/`pods`/`wait-ready`/
-            `storageclass` instead.
+            `storageclass`/`raw` instead. The StorageClass is `standard`
+            (rancher local-path, in the `local-path-storage` namespace).
+
+            ## The `kindcluster:` substrate
+
+            The candy is the host-tooling leg of the `kindcluster` substrate. A
+            `kindcluster:` template provisions the cluster (engine / `node_image` /
+            `nodes`); a `from:` deploy runs an optional workload applied with
+            `kubectl apply -k`. The word is `kindcluster`, NOT `kind` — the bare word
+            collides with the schema's own `source: {kind: …}` discriminator and with
+            kind's own `kind: Cluster` config field.
+
+            ## Loading a local image
+
+            kind nodes have their own image store, separate from the host engine's. A
+            locally-built image must be loaded in — and `kind load docker-image` is
+            BROKEN on podman (measured: "image not present locally" despite the image
+            existing). The provider uses the engine-agnostic `kind load image-archive`
+            path, so it works on docker, podman, and nerdctl.
+
+            ## Teardown
+
+            `kind delete cluster --name <cluster>` — engine-scoped (the provider sets
+            `KIND_EXPERIMENTAL_PROVIDER`, since `kind get/delete cluster` is
+            engine-scoped: names are unique only WITHIN an engine), and idempotent on a
+            missing cluster.
 
             ## Usage
 
@@ -284,18 +309,27 @@ kind-skill:
                   - kind
 
             # a kindcluster template + deploy (see /charly-kubernetes:kubernetes)
-            kind-lab:
+            kind-lab-cluster:
               kindcluster:
                 engine: podman
                 node_image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
                 nodes:
                   - role: control-plane
+                    extra_port_mappings:
+                      - container_port: 30080
+                        host_port: 30080
                   - role: worker
+
+            kind-lab:
+              kindcluster:
+                from: kind-lab-cluster
+                image: my-app          # optional workload, applied via `kubectl apply -k`
+                disposable: true       # if it is a check bed
             ```
 
             ```bash
             charly deploy add kind-host --target local     # install kind on the host
-            kind create cluster --name lab                # or drive it via a kindcluster deploy
+            charly deploy add kind-lab  --target kindcluster
             kubectl --context kind-lab get nodes
             ```
 
@@ -308,5 +342,6 @@ kind-skill:
             ## Related
 
             - `/charly-kubernetes:check-k8s` — the `kube:` cluster-probe check verb
-            - `/charly-kubernetes:kubernetes` — the `kubernetes:` / `kindcluster:` cluster substrate
+            - `/charly-kubernetes:kubernetes` — the `kubernetes:` cluster template
+            - `/charly-core:deploy` — `charly deploy add/del`
             - `/charly-image:layer` — candy authoring reference
