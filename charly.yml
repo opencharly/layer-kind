@@ -14,6 +14,8 @@ kind:
             run kind). The engine is selected by KIND_EXPERIMENTAL_PROVIDER, which is
             charly's own engine word (podman/docker/nerdctl) — no separate selector.
             Every installed artifact is file/command-checkable at build scope.
+        require:
+            - '@github.com/opencharly/layer-kubernetes:v2026.241.0654'
         package:
             - ca-certificates
             - curl
@@ -198,7 +200,7 @@ kind:
                 - build
               stdout:
                 - contains: "kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5"
-              command: grep -q "kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5" /etc/charly/kind-node-image
+              command: grep "kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5" /etc/charly/kind-node-image
             - check: the kind-engine-prepare script is installed and executable
               context:
                 - build
