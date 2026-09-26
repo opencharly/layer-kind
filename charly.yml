@@ -303,14 +303,18 @@ kind-skill:
 
             ## Usage
 
-            ```yaml
-            # charly.yml -- the host tooling profile
-            kind-host:
-              local:
-                candy:
-                  - kind
+            A `kind-host` target:local profile is SHIPPED in this repo's
+            `charly.yml` (`kind-host-app` + the `kind-host` applier): it composes
+            this candy (and the kubernetes client candy it requires) onto the
+            operator host, so `kind` + `kubectl`/`helm` + the per-engine
+            preconditions arrive as a product capability.
 
-            # a kindcluster template + deploy (see /charly-kubernetes:kubernetes)
+            ```bash
+            charly --repo opencharly/layer-kind deploy add kind-host   # install kind on the host
+            ```
+
+            ```yaml
+            # a kindcluster template + deploy (see /charly-kubernetes:check-k8s)
             kind-lab-cluster:
               kindcluster:
                 engine: podman
@@ -330,8 +334,7 @@ kind-skill:
             ```
 
             ```bash
-            charly deploy add kind-host --target local     # install kind on the host
-            charly deploy add kind-lab  --target kindcluster
+            charly deploy add kind-lab
             kubectl --context kind-lab get nodes
             ```
 
@@ -347,3 +350,42 @@ kind-skill:
             - `/charly-kubernetes:kubernetes` — the `kubernetes:` cluster template
             - `/charly-core:deploy` — `charly deploy add/del`
             - `/charly-image:layer` — candy authoring reference
+
+# =============================================================================
+# kind-host — the target:local host-tooling profile for kind (Phase 5 of the
+# kind-integration cutover). A `kind: local` template composing the kind candy
+# (+ the kubernetes client candy it requires) onto the OPERATOR HOST, plus the
+# `local: {host: local}` deploy that applies it. kind provisions local
+# Kubernetes clusters as node containers on the operator's engine, so it is host
+# tooling; this profile delivers the capability (the binary + per-engine
+# preconditions) rather than documenting it.
+#
+# `kind-host-app` is the reusable template (compose it from any box/project);
+# `kind-host` applies it to THIS host via direct local exec — the
+# local.charly-cachyos precedent.
+# =============================================================================
+kind-host-app:
+    local:
+        description: |-
+            The kind (Kubernetes-in-Docker) host tooling profile: the pinned,
+            sha256-verified kind binary + the kind-engine-prepare per-engine
+            preconditions, plus the kubectl/helm/k3d client toolchain (the
+            kubernetes candy the kind candy requires). Applied to the operator's
+            host via direct local exec, so `kind create cluster` (or a
+            `target: kindcluster` deploy) works on docker / rootless podman /
+            rootless nerdctl with no further setup.
+        candy:
+            - kind
+        install_opts:
+            with_service: true
+            allow_repo_changes: true
+            allow_root_tasks: true
+kind-host:
+    local:
+        from: kind-host-app
+        host: local
+        description: Apply the kind host-tooling profile to this host
+        install_opts:
+            with_service: true
+            allow_repo_changes: true
+            allow_root_tasks: true
