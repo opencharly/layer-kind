@@ -1,7 +1,5 @@
-version: 2026.261.1747
 kind:
     candy:
-        version: 2026.268.2100
         description: |
             The `kind` (Kubernetes-in-Docker) tool plus its per-engine host preconditions.
             Installs the pinned kind release binary (sha256-verified against the upstream
