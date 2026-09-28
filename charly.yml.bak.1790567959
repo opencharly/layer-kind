@@ -1,5 +1,7 @@
+version: 2026.261.1747
 kind:
     candy:
+        version: 2026.268.2100
         description: |
             The `kind` (Kubernetes-in-Docker) tool plus its per-engine host preconditions.
             Installs the pinned kind release binary (sha256-verified against the upstream
@@ -218,6 +220,7 @@ kind:
               exit_status: 0
               command: kubectl version --client
             - agent-check: with a container engine available, kind can create a local Kubernetes cluster (the live acceptance is the check-kindcluster-* R10 beds)
+
 kind-skill:
     skill:
         name: kind
