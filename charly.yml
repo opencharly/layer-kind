@@ -13,7 +13,7 @@ kind:
             charly's own engine word (podman/docker/nerdctl) — no separate selector.
             Every installed artifact is file/command-checkable at build scope.
         require:
-            - '@github.com/opencharly/layer-kubernetes:v2026.241.0654'
+            - '@github.com/opencharly/layer-kubernetes:v2026.272.0319'
         package:
             - ca-certificates
             - curl
