@@ -4,7 +4,7 @@ description: 'The `kind` (Kubernetes-in-Docker) tool + per-engine host precondit
 
   Local Kubernetes clusters as node containers on the operator''s engine
 
-  (podman/docker/containerd, mapped to kind's provider word via
+  (podman/docker/containerd, mapped to the provider word kind expects via
   KIND_EXPERIMENTAL_PROVIDER). Use when composing
 
   the kind candy, the kindcluster substrate, or a local kind cluster.'
