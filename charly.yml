@@ -226,11 +226,11 @@ kind-skill:
         name: kind
         family: kubernetes
         owner: kind
-        description: |-
-            The `kind` (Kubernetes-in-Docker) tool + per-engine host preconditions.
-            Local Kubernetes clusters as node containers on the operator's engine
-            (podman/docker/containerd, mapped to kind's provider word via
-            KIND_EXPERIMENTAL_PROVIDER). Use when composing the kind candy, the
-            kindcluster substrate, or a local kind cluster.
+        # ROUTING only. The prose lives in `.agents/skills/kind/SKILL.md` (its
+        # frontmatter `description:` and its body) — that FILE is the source of
+        # record. An inline copy here is a second description, and a copy that
+        # disagrees with the file is a HARD ERROR for the corpus generator
+        # (`skill %q: the node's inline `description:` and its file's frontmatter
+        # disagree`), which is exactly how the drift was caught.
         triggers:
             - "kind (Kubernetes-in-Docker) / kindcluster deploy / local Kubernetes-in-Docker / a kind cluster on podman/docker/containerd / KIND_EXPERIMENTAL_PROVIDER / composing the kind candy"
