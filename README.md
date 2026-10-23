@@ -6,8 +6,9 @@ per-engine host preconditions, as a standalone OpenCharly layer repo.
 `kind` provisions local Kubernetes clusters as **node containers** on the
 operator's container engine. It is host tooling, so the candy is composed by a
 `target: local` deploy on the operator host (or baked into a box that will run
-kind). The engine is charly's own engine word (`podman` / `docker` / `nerdctl`),
-mapped 1:1 to kind's `KIND_EXPERIMENTAL_PROVIDER`.
+kind). The engine is charly's own engine word (`podman` / `docker` / `containerd`),
+mapped to kind's `KIND_EXPERIMENTAL_PROVIDER` through the engine capability data
+(`containerd` → `nerdctl`).
 
 ## What it provides
 

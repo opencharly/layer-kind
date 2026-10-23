@@ -9,8 +9,9 @@ kind:
             containers. kind provisions local Kubernetes clusters as node containers on
             the operator's engine, so it is host tooling: this candy is composed by a
             `target: local` deploy on the operator host (or baked into a box that will
-            run kind). The engine is selected by KIND_EXPERIMENTAL_PROVIDER, which is
-            charly's own engine word (podman/docker/nerdctl) — no separate selector.
+            run kind). The engine is charly's own engine word (podman/docker/containerd),
+            mapped to kind's KIND_EXPERIMENTAL_PROVIDER through the engine capability
+            data (containerd -> nerdctl); there is no separate selector.
             Every installed artifact is file/command-checkable at build scope.
         require:
             - '@github.com/opencharly/layer-kubernetes:v2026.272.0319'
@@ -93,8 +94,8 @@ kind:
             # scope and run by a `target: local` deploy on the operator host. It is
             # idempotent and engine-selected: docker needs nothing beyond a reachable
             # daemon; rootless podman needs cgroup delegation + a log driver kind can
-            # tail + raised pids/inotify limits; rootless nerdctl needs rootless
-            # containerd running.
+            # tail + raised pids/inotify limits; containerd needs rootless containerd
+            # running (the nerdctl CLI drives it).
             # ---------------------------------------------------------------------
             - run: install the kind-engine-prepare script (per-engine host preconditions)
               write: /usr/local/bin/kind-engine-prepare
@@ -104,7 +105,7 @@ kind:
                 #!/bin/sh
                 # kind-engine-prepare — make the resolved container engine ready for kind's
                 # node containers. Idempotent; safe to re-run. Reads CHARLY_RUN_ENGINE
-                # (podman|docker|nerdctl). Every mutation is a documented upstream kind
+                # (podman|docker|containerd). Every mutation is a documented upstream kind
                 # rootless precondition; nothing here is a workaround.
                 #
                 #   docker  — a reachable rootless/rootful daemon is all kind needs.
@@ -112,18 +113,19 @@ kind:
                 #             (rootless podman's userspace relay races systemd's boot
                 #             message → "could not find a log line that matches ...");
                 #             raised pids/inotify limits.
-                #   nerdctl — rootless containerd must be running
-                #             (containerd-rootless-setuptool.sh install).
+                #   containerd — rootless containerd must be running
+                #                (containerd-rootless-setuptool.sh install); the
+                #                nerdctl CLI drives it.
                 set -eu
 
                 engine="${CHARLY_RUN_ENGINE:-podman}"
                 echo "kind-engine-prepare: engine=${engine}"
 
                 case "${engine}" in
-                  nerdctl)
+                  containerd)
                     if [ ! -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/containerd-rootless/api.sock" ]; then
                       if command -v containerd-rootless-setuptool.sh >/dev/null 2>&1; then
-                        echo "kind-engine-prepare: installing rootless containerd (nerdctl precondition)"
+                        echo "kind-engine-prepare: installing rootless containerd (containerd precondition)"
                         containerd-rootless-setuptool.sh install
                         systemctl --user enable --now containerd.service 2>/dev/null || true
                       else
@@ -227,7 +229,8 @@ kind-skill:
         description: |-
             The `kind` (Kubernetes-in-Docker) tool + per-engine host preconditions.
             Local Kubernetes clusters as node containers on the operator's engine
-            (docker/podman/nerdctl via KIND_EXPERIMENTAL_PROVIDER). Use when composing
-            the kind candy, the kindcluster substrate, or a local kind cluster.
+            (podman/docker/containerd, mapped to kind's provider word via
+            KIND_EXPERIMENTAL_PROVIDER). Use when composing the kind candy, the
+            kindcluster substrate, or a local kind cluster.
         triggers:
-            - "kind (Kubernetes-in-Docker) / kindcluster deploy / local Kubernetes-in-Docker / a kind cluster on docker-podman-nerdctl / KIND_EXPERIMENTAL_PROVIDER / composing the kind candy"
+            - "kind (Kubernetes-in-Docker) / kindcluster deploy / local Kubernetes-in-Docker / a kind cluster on podman/docker/containerd / KIND_EXPERIMENTAL_PROVIDER / composing the kind candy"
